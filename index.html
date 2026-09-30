@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>South Park</title>
+    <!-- Libreria aframe -->
+    <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
+    <!-- Libreria MindAR -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+    <!-- Escena de aframe -->
+    <a-scene mindar-image="imageTargetSrc: ./assets_MindAR/targets.mind" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+
+        <a-assets>
+            <!-- Aqui van los recursos -->
+             <img src="./assets_MindAR/ola.png" alt="" id="personajes">
+
+
+            <!-- Esta etiqueta se utiliza para modelos 3D y ya -->
+             <a-assets-item id="3D" src="./assets_MindAR/srgarrison.glb"></a-assets-item>
+             <a-assets-item id="3D2" src="./assets_MindAR/pavo.glb"></a-assets-item>
+             <a-assets-item id="3D3" src="./assets_MindAR/gato.glb"></a-assets-item>
+
+             <!-- Todos los valores que salen en la etiqueta de video son OBLIGATORIOS -->
+
+             <video 
+             id="video"
+             src="./assets_MindAR/New Season 17 Intro Song _ South Park.mp4"
+             preload="auto"
+             loop="true"
+             muted="true"
+             crossorigin="anonymous"
+             playsinline
+             webtik-playsinline
+             ></video>
+        </a-assets>
+
+        
+        <a-camera position=" 0 0 0" look-controls="enabled:false">
+            <!-- camara de la escena -->
+        </a-camera>
+
+        <a-entity mindar-image-target="targetIndex: 0">
+            <!-- Aqui se colocan los elementos que salen en AR -->   
+            <a-plane src="#personajes"  position="0 -0.2 0.1" width="1.5" height="1" rotation="0 0 0"></a-plane>
+            <a-gltf-model rotation="0 0 0" position="-1.1 -0.4 0.1" scale="1 1 1" src="#3D"></a-gltf-model>
+            <a-gltf-model rotation="0 0 0" position="1.2 -1.2 -0.5" scale="0.7 0.7 0.7" src="#3D2"></a-gltf-model>
+            <a-gltf-model rotation="0 0 0" position="1.1 -0.4 0.1" scale="0.9 0.9 0.9" src="#3D3"></a-gltf-model>
+            <a-text
+            value="South Park"
+            color="black"
+            aling="center"
+            width="2"
+            position="0 -0.2 0.1"
+            
+            ></a-text>
+            <a-video src="#video" position="-2 0 0.2" width="1.6" height="0.9" ></a-video>
+        </a-entity>
+        
+    </a-scene>
+    <script>
+        document.querySelector('[mindar-image-target]').addEventListener( 'targetFound', () => {
+            const video = document.querySelector('#video');
+            video.play();
+        })
+        document.querySelector('[mindar-image-target]').addEventListener( 'targetLost', () => {
+            const video = document.querySelector('#video');
+            video.pause();
+        })
+    </script>
+</body>
+</html>
