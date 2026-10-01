@@ -1,74 +1,198 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>South Park</title>
-    <!-- Libreria aframe -->
+    <!-- Libreria A-Frame -->
     <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
     <!-- Libreria MindAR -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body style="margin: 0; overflow: hidden;">
-    <!-- Escena de aframe -->
+    <div id="pos" style="position:fixed;top:8px;left:8px;z-index:9999;color:#fff;font:14px monospace;text-shadow:0 0 4px #000;pointer-events:none;"></div>
+    <div id="aviso" style="position:fixed;left:0;right:0;bottom:24px;z-index:9999;text-align:center;color:#fff;font:600 16px sans-serif;text-shadow:0 0 6px #000;pointer-events:none;">Toca la pantalla para activar el sonido</div>
+    <!-- Escena de A-Frame -->
     <a-scene mindar-image="imageTargetSrc: ./assets_MindAR/targets.mind" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
 
         <a-assets>
-            <!-- Aqui van los recursos -->
-             <img src="./assets_MindAR/ola.png" alt="" id="personajes">
+            <img src="./assets_MindAR/ola.png" alt="" id="personajes">
 
+            <!-- Modelos 3D -->
+            <a-assets-item id="3D" src="./assets_MindAR/srgarrison.glb"></a-assets-item>
+            <a-assets-item id="3D2" src="./assets_MindAR/pavo.glb"></a-assets-item>
+            <a-assets-item id="3D3" src="./assets_MindAR/gato.glb"></a-assets-item>
 
-            <!-- Esta etiqueta se utiliza para modelos 3D y ya -->
-             <a-assets-item id="3D" src="./assets_MindAR/srgarrison.glb"></a-assets-item>
-             <a-assets-item id="3D2" src="./assets_MindAR/pavo.glb"></a-assets-item>
-             <a-assets-item id="3D3" src="./assets_MindAR/gato.glb"></a-assets-item>
-
-             <!-- Todos los valores que salen en la etiqueta de video son OBLIGATORIOS -->
-
-             <video 
-             id="video"
-             src="./assets_MindAR/New Season 17 Intro Song _ South Park.mp4"
-             preload="auto"
-             loop="true"
-             muted="true"
-             crossorigin="anonymous"
-             playsinline
-             webtik-playsinline
-             ></video>
+            <!-- Video -->
+            <video
+                id="video"
+                src="./assets_MindAR/video.mp4"
+                preload="auto"
+                loop
+                crossorigin="anonymous"
+                playsinline
+                webkit-playsinline
+            ></video>
         </a-assets>
 
-        
-        <a-camera position=" 0 0 0" look-controls="enabled:false">
-            <!-- camara de la escena -->
-        </a-camera>
+        <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
-        <a-entity mindar-image-target="targetIndex: 0">
-              
-            <a-plane src="#personajes"  position="0 -0.2 0.1" width="1.5" height="1" rotation="0 0 0"></a-plane>
-            <a-gltf-model rotation="0 0 0" position="-1.1 -0.4 0.1" scale="1 1 1" src="#3D"></a-gltf-model>
-            <a-gltf-model rotation="0 0 0" position="1.2 -1.2 -0.5" scale="0.7 0.7 0.7" src="#3D2"></a-gltf-model>
-            <a-gltf-model rotation="0 0 0" position="1.1 -0.4 0.1" scale="0.9 0.9 0.9" src="#3D3"></a-gltf-model>
-            <a-text
-            value="South Park"
-            color="black"
-            aling="center"
-            width="2"
-            position="0 -0.2 0.1"
-            
-            ></a-text>
-            <a-video src="#video" position="-2 0 0.2" width="1.6" height="0.9" ></a-video>
+        <!-- reveal-on-move controla la aparicion de los recursos -->
+        <a-entity mindar-image-target="targetIndex: 0"
+                  reveal-on-move="speed: 0.8; cooldown: 700">
+
+            <!-- Orden de aparicion = orden en el HTML. Todos empiezan ocultos -->
+            <a-plane class="reveal" visible="false" data-scale="1 1 1"
+                     src="#personajes" position="0 0 0.1" width="1.5" height="1"></a-plane>
+
+            <a-gltf-model class="reveal" visible="false" data-scale="1 1 1"
+                          position="0 0 0.1" src="#3D"></a-gltf-model>
+
+            <a-gltf-model class="reveal" visible="false" data-scale="0.7 0.7 0.7"
+                          position="-1.8 -0.5 -0.6" src="#3D2"></a-gltf-model>
+
+            <a-gltf-model class="reveal" visible="false" data-scale="0.9 0.9 0.9"
+                          position="0 0 0.1" src="#3D3"></a-gltf-model>
+
+            <a-video class="reveal" visible="false" data-scale="1 1 1" data-video="#video"
+                     src="#video" position="0 0 0.1" width="1.6" height="0.9"></a-video>
         </a-entity>
-        
     </a-scene>
+
     <script>
-        document.querySelector('[mindar-image-target]').addEventListener( 'targetFound', () => {
-            const video = document.querySelector('#video');
-            video.play();
-        })
-        document.querySelector('[mindar-image-target]').addEventListener( 'targetLost', () => {
-            const video = document.querySelector('#video');
-            video.pause();
-        })
+        // El navegador solo permite sonido despues de la primera interaccion
+        (function () {
+            const desbloquear = () => {
+                const v = document.querySelector('#video');
+                v.muted = false;
+                v.play().then(() => v.pause()).catch(() => {});
+                document.querySelector('#aviso').remove();
+                ['pointerdown', 'touchstart', 'keydown'].forEach(ev =>
+                    window.removeEventListener(ev, desbloquear, true));
+            };
+            ['pointerdown', 'touchstart', 'keydown'].forEach(ev =>
+                window.addEventListener(ev, desbloquear, true));
+        })();
+
+        AFRAME.registerComponent('reveal-on-move', {
+            schema: {
+                speed:    { type: 'number', default: 0.8 }, // sensibilidad: mas bajo = mas sensible
+                cooldown: { type: 'number', default: 700 }  // ms minimos entre apariciones
+            },
+
+            init() {
+                this.items = Array.from(this.el.querySelectorAll('.reveal'));
+                this.index = 0;
+                this.found = false;
+                this.hasLast = false;
+                this.last = new THREE.Vector3();
+                this.lastTime = 0;
+                this.lastReveal = 0;
+
+                this.el.addEventListener('targetFound', () => {
+                    this.found = true;
+                    this.hasLast = false;
+                });
+                this.el.addEventListener('targetLost', () => {
+                    this.found = false;
+                    document.querySelector('#video').pause();
+                });
+
+                // Activacion manual: PC (espacio / clic) y celular (toque)
+                const manual = () => {
+                    if (this.found && performance.now() - this.lastReveal > 300) {
+                        this.lastReveal = performance.now();
+                        this.showNext();
+                    }
+                };
+                window.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') manual();
+                    if (e.code === 'KeyR') this.reset();
+                    this.nudge(e);
+                });
+                window.addEventListener('click', manual);
+                window.addEventListener('touchend', (e) => { e.preventDefault(); manual(); }, { passive: false });
+            },
+
+            tick(time) {
+                if (!this.found) return;
+
+                const pos = this.el.object3D.position;
+                if (!this.hasLast) {
+                    this.last.copy(pos);
+                    this.lastTime = time;
+                    this.hasLast = true;
+                    return;
+                }
+
+                const dt = (time - this.lastTime) / 1000;
+                if (dt <= 0) return;
+
+                const velocity = pos.distanceTo(this.last) / dt; // unidades/segundo
+                this.last.copy(pos);
+                this.lastTime = time;
+
+                if (velocity > this.data.speed && time - this.lastReveal > this.data.cooldown) {
+                    this.lastReveal = time;
+                    this.showNext();
+                }
+            },
+
+            showNext() {
+                // Oculta el recurso anterior (y pausa el video si era el video)
+                if (this.current) {
+                    this.current.setAttribute('visible', false);
+                    if (this.current.dataset.video) {
+                        document.querySelector(this.current.dataset.video).pause();
+                    }
+                }
+
+                // Muestra el siguiente y vuelve al primero al terminar
+                const item = this.items[this.index];
+                this.index = (this.index + 1) % this.items.length;
+                this.current = item;
+
+                item.setAttribute('visible', true);
+                item.setAttribute('animation__pop', {
+                    property: 'scale',
+                    from: '0 0 0',
+                    to: item.dataset.scale,
+                    dur: 500,
+                    easing: 'easeOutBack'
+                });
+
+                // Si el recurso es el video, lo reproduce al aparecer
+                if (item.dataset.video) {
+                    document.querySelector(item.dataset.video).play().catch(() => {});
+                }
+            },
+
+            // Ajuste en vivo (PC): flechas = X/Y, W/S = adelante/atras del recurso visible
+            nudge(e) {
+                if (!this.current) return;
+                const step = e.shiftKey ? 0.3 : 0.05; // Shift = pasos grandes
+                const p = this.current.getAttribute('position');
+                const np = { x: p.x, y: p.y, z: p.z };
+                if (e.code === 'ArrowLeft')  np.x -= step;
+                else if (e.code === 'ArrowRight') np.x += step;
+                else if (e.code === 'ArrowUp')    np.y += step;
+                else if (e.code === 'ArrowDown')  np.y -= step;
+                else if (e.code === 'KeyW') np.z += step;
+                else if (e.code === 'KeyS') np.z -= step;
+                else return;
+                e.preventDefault();
+                this.current.setAttribute('position', np);
+                document.querySelector('#pos').textContent =
+                    'position="' + [np.x, np.y, np.z].map(n => +n.toFixed(2)).join(' ') + '"';
+            },
+
+            reset() {
+                this.items.forEach(i => i.setAttribute('visible', false));
+                document.querySelector('#video').pause();
+                this.index = 0;
+                this.current = null;
+            }
+        });
     </script>
 </body>
 </html>
